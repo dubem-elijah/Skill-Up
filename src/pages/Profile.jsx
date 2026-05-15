@@ -169,25 +169,29 @@ const badges = [
   { icon: '🎯', label: 'Goal Setter' },
 ];
 
-export default function Profile({ user, setUser }) {
+export default function Profile({ user, setUser, profileUser, openProfile }) {
+  const profile = profileUser || user;
+  const isOwnProfile = !profileUser || profileUser.id === user.id;
   const [activeTab, setActiveTab] = useState('Posts');
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
-    name: user.name,
-    role: user.role || 'Full Stack Developer',
-    bio: user.bio || 'Building the future, one commit at a time 🚀 | Web Dev & UI/UX | Open to opportunities',
+    name: profile.name,
+    role: profile.role || 'Full Stack Developer',
+    bio: profile.bio || 'Building the future, one commit at a time 🚀 | Web Dev & UI/UX | Open to opportunities',
   });
   const tabs = ['Posts', 'Skills', 'Badges'];
 
   useEffect(() => {
     setForm({
-      name: user.name,
-      role: user.role || 'Full Stack Developer',
-      bio: user.bio || 'Building the future, one commit at a time 🚀 | Web Dev & UI/UX | Open to opportunities',
+      name: profile.name,
+      role: profile.role || 'Full Stack Developer',
+      bio: profile.bio || 'Building the future, one commit at a time 🚀 | Web Dev & UI/UX | Open to opportunities',
     });
-  }, [user]);
+  }, [profile]);
 
   const saveProfile = () => {
+    if (!isOwnProfile) return;
+
     const initials = form.name
       .split(' ')
       .map((word) => word[0] || '')
@@ -210,10 +214,12 @@ export default function Profile({ user, setUser }) {
       {/* Banner */}
       <div style={styles.banner}>
         <div style={styles.avatarWrap}>
-          <Avatar initials={user.initials} size="xl" gradient="linear-gradient(135deg, #7c5cfc, #ec4899)" />
-          <button onClick={() => setEditing(true)} style={{ position: 'absolute', right: -4, bottom: 6, width: 34, height: 34, borderRadius: 12, background: 'var(--bg3)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <Icon name="edit" size={14} color="var(--text2)" />
-          </button>
+          <Avatar initials={profile.initials} size="xl" gradient={profile.gradient || 'linear-gradient(135deg, #7c5cfc, #ec4899)'} />
+          {isOwnProfile && (
+            <button onClick={() => setEditing(true)} style={{ position: 'absolute', right: -4, bottom: 6, width: 34, height: 34, borderRadius: 12, background: 'var(--bg3)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <Icon name="edit" size={14} color="var(--text2)" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -221,17 +227,17 @@ export default function Profile({ user, setUser }) {
       <div style={styles.body}>
         <div style={styles.topRow}>
           <div>
-            <div style={styles.name}>{user.name}</div>
-            <div style={styles.handle}>@{user.name.toLowerCase()} · {user.role || 'Web Developer'}</div>
+            <div style={styles.name}>{profile.name}</div>
+            <div style={styles.handle}>@{profile.name.toLowerCase()} · {profile.role || 'Web Developer'}</div>
             <div style={styles.bio}>
-              {user.bio || 'Building the future, one commit at a time 🚀 | Web Dev & UI/UX | Open to opportunities'}
+              {profile.bio || 'Building the future, one commit at a time 🚀 | Web Dev & UI/UX | Open to opportunities'}
             </div>
             <div style={styles.statsRow}>
               {[
                 { num: '2.4k', label: 'Followers' },
                 { num: '318', label: 'Following' },
-                { num: `${user.xp || 7200}`, label: 'XP' },
-                { num: `${user.streak || 12}`, label: 'Day Streak 🔥' },
+                { num: `${profile.xp || user.xp || 7200}`, label: 'XP' },
+                { num: `${profile.streak || user.streak || 12}`, label: 'Day Streak 🔥' },
               ].map(({ num, label }) => (
                 <div key={label} style={styles.stat}>
                   <div style={styles.statNum}>{num}</div>
@@ -240,9 +246,11 @@ export default function Profile({ user, setUser }) {
               ))}
             </div>
           </div>
-          <button style={styles.editBtn} onClick={() => setEditing(true)}>
-            <Icon name="edit" size={14} /> Edit Profile
-          </button>
+          {isOwnProfile && (
+            <button style={styles.editBtn} onClick={() => setEditing(true)}>
+              <Icon name="edit" size={14} /> Edit Profile
+            </button>
+          )}
         </div>
       </div>
 
@@ -277,7 +285,7 @@ export default function Profile({ user, setUser }) {
       </div>
 
       <div style={styles.tabContent}>
-        {activeTab === 'Posts' && posts.slice(0, 2).map((p) => <PostCard key={p.id} post={p} />)}
+        {activeTab === 'Posts' && posts.slice(0, 2).map((p) => <PostCard key={p.id} post={p} onProfileClick={openProfile} />)}
 
         {activeTab === 'Skills' && (
           <>

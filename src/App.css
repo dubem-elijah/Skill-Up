@@ -203,6 +203,29 @@ a {
   background: var(--purple-bg2);
 }
 
+/* ===== LIGHT THEME ===== */
+[data-theme="light"] {
+  --bg: #f7f8fc;
+  --bg2: #ffffff;
+  --bg3: #eef2f8;
+  --bg4: #f9fbff;
+  --bg5: #eef3fb;
+  --border: rgba(15, 23, 42, 0.08);
+  --border2: rgba(15, 23, 42, 0.12);
+  --border3: rgba(15, 23, 42, 0.16);
+  --text1: #102240;
+  --text2: #475569;
+  --text3: #64748b;
+  --purple-bg: rgba(124, 92, 252, 0.12);
+  --purple-bg2: rgba(124, 92, 252, 0.06);
+  --green-bg: rgba(34, 197, 94, 0.12);
+  --amber-bg: rgba(245, 158, 11, 0.12);
+  --red-bg: rgba(239, 68, 68, 0.12);
+  --blue-bg: rgba(59, 130, 246, 0.12);
+  --pink-bg: rgba(236, 72, 153, 0.12);
+  --teal-bg: rgba(20, 184, 166, 0.12);
+}
+
 /* ===== FORM ===== */
 .input {
   background: var(--bg3);
@@ -371,6 +394,23 @@ a {
   justify-content: center;
   color: white;
   border: 2px solid var(--bg2);
+}
+
+.navbar-theme-toggle {
+  width: 38px;
+  height: 38px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: var(--text2);
+}
+
+.navbar-theme-toggle:hover {
+  background: var(--bg4);
+  border-color: var(--border2);
 }
 
 .navbar-profile-container {
@@ -1044,26 +1084,7 @@ a {
 
   /* Improve opportunities section layout on large screens */
   .right-panel-wrapper .opportunities-section {
-    max-height: 600px;
-    overflow-y: auto;
     min-height: 400px;
-  }
-
-  .right-panel-wrapper .opportunities-section::-webkit-scrollbar {
-    width: 4px;
-  }
-
-  .right-panel-wrapper .opportunities-section::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .right-panel-wrapper .opportunities-section::-webkit-scrollbar-thumb {
-    background: var(--border2);
-    border-radius: 2px;
-  }
-
-  .right-panel-wrapper .opportunities-section::-webkit-scrollbar-thumb:hover {
-    background: var(--border3);
   }
 
   .right-panel-wrapper .opportunities-section .opportunity-card {
@@ -1079,10 +1100,23 @@ a {
     margin-bottom: 0;
   }
 
-  /* Apply same properties to top learners section */
+  .right-panel-wrapper .featured-opportunity-section {
+    min-height: 320px;
+    margin-bottom: 16px;
+    overflow: visible;
+  }
+
+  .right-panel-wrapper .featured-opportunity-card {
+    transition: all var(--ease);
+  }
+
+  .right-panel-wrapper .featured-opportunity-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 28px rgba(124, 92, 252, 0.12);
+  }
+
+  /* Top learners should expand naturally without scrolling */
   .right-panel-wrapper .top-learners-section {
-    max-height: 400px;
-    overflow-y: auto;
     min-height: 250px;
   }
 
@@ -1112,6 +1146,12 @@ a {
 
   .right-panel-wrapper .top-learners-section .learner-item:hover {
     background: var(--bg4);
+  }
+}
+
+@media (min-width: 1200px) {
+  :root {
+    --right-width: 350px;
   }
 }
 

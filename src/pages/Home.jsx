@@ -35,7 +35,7 @@ const styles = {
   }),
 };
 
-export default function Home({ user }) {
+export default function Home({ user, openProfile, searchQuery = '' }) {
   const [activeTab, setActiveTab] = useState('For you');
   const [posts, setPosts] = useState(initialPosts);
 
@@ -76,9 +76,34 @@ export default function Home({ user }) {
         ))}
       </div>
 
-      {posts.map((post) => (
-        <PostCard key={post.id} post={post} />
+      {posts.filter((post) => {
+        if (!searchQuery.trim()) return true;
+        const query = searchQuery.trim().toLowerCase();
+        return [
+          post.user?.name,
+          post.category,
+          post.text,
+          post.taggedSkill?.name,
+          post.taggedSkill?.category,
+        ].some((value) => value?.toLowerCase().includes(query));
+      }).map((post) => (
+        <PostCard key={post.id} post={post} onProfileClick={openProfile} />
       ))}
+      {!posts.some((post) => {
+        if (!searchQuery.trim()) return false;
+        const query = searchQuery.trim().toLowerCase();
+        return [
+          post.user?.name,
+          post.category,
+          post.text,
+          post.taggedSkill?.name,
+          post.taggedSkill?.category,
+        ].some((value) => value?.toLowerCase().includes(query));
+      }) && searchQuery.trim() && (
+        <div style={{ color: 'var(--text2)', padding: '24px 0', fontSize: 14 }}>
+          No posts found for "{searchQuery}".
+        </div>
+      )}
     </main>
   );
 }

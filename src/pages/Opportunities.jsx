@@ -57,15 +57,24 @@ const styles = {
   },
 };
 
-export default function Opportunities({ user, setUser }) {
+export default function Opportunities({ user, setUser, searchQuery = '' }) {
   const [activeFilter, setActiveFilter] = useState('All');
   const [appliedIds, setAppliedIds] = useState([]);
   const [successMessage, setSuccessMessage] = useState('');
 
   const filters = ['All', ...Array.from(new Set(opportunities.flatMap((opp) => opp.tags)))];
-  const filtered = activeFilter === 'All'
-    ? opportunities
-    : opportunities.filter((o) => o.tags.includes(activeFilter));
+  const filtered = opportunities
+    .filter((opp) => activeFilter === 'All' || opp.tags.includes(activeFilter))
+    .filter((opp) => {
+      if (!searchQuery.trim()) return true;
+      const query = searchQuery.trim().toLowerCase();
+      return [
+        opp.title,
+        opp.postedBy,
+        opp.price,
+        ...opp.tags,
+      ].some((value) => value?.toLowerCase().includes(query));
+    });
 
   const handleApply = (opp) => {
     if (appliedIds.includes(opp.id)) return;

@@ -46,7 +46,7 @@ function BankingPreview() {
   );
 }
 
-export default function PostCard({ post }) {
+export default function PostCard({ post, onProfileClick }) {
   const { addInteractionMessage } = useMessages();
   const [liked, setLiked] = useState(post.isLiked || post.likedByMe);
   const [likes, setLikes] = useState(post.likes);
@@ -57,6 +57,17 @@ export default function PostCard({ post }) {
   const initials = post.user?.initials || post.initials;
   const gradient = post.user?.gradient || `linear-gradient(135deg, ${post.avatarColor?.[0] || '#7c5cfc'}, ${post.avatarColor?.[1] || '#ec4899'})`;
   const isPro = post.user?.isPro || post.isPro;
+  const authorProfile = {
+    id: post.user?.id || post.authorId || author,
+    name: author,
+    initials,
+    gradient,
+    role: post.user?.role || 'Full Stack Developer',
+    bio: post.user?.bio || 'Building the future, one commit at a time.',
+    xp: post.user?.xp || 0,
+    streak: post.user?.streak || 0,
+    isPro,
+  };
 
   const handleLike = () => {
     setLiked(l => !l);
@@ -85,10 +96,22 @@ export default function PostCard({ post }) {
   return (
     <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 18, padding: 18, marginBottom: 14 }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
-        <Avatar initials={initials} size="lg" gradient={gradient} />
+        <button
+          type="button"
+          onClick={() => onProfileClick?.(authorProfile)}
+          style={{ padding: 0, border: 'none', background: 'transparent', cursor: onProfileClick ? 'pointer' : 'default' }}
+        >
+          <Avatar initials={initials} size="lg" gradient={gradient} />
+        </button>
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
-            <span style={{ fontWeight: 600, fontSize: 15, color: 'var(--text1)' }}>{author}</span>
+            <button
+              type="button"
+              onClick={() => onProfileClick?.(authorProfile)}
+              style={{ padding: 0, border: 'none', background: 'transparent', cursor: onProfileClick ? 'pointer' : 'default', fontWeight: 600, fontSize: 15, color: 'var(--text1)' }}
+            >
+              {author}
+            </button>
             {isPro && <span style={{ background: 'var(--purple-bg)', color: 'var(--purple2)', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 6, border: '1px solid rgba(124,92,252,0.3)' }}>Pro</span>}
           </div>
           <div style={{ fontSize: 12, color: 'var(--text2)' }}><span style={{ color: 'var(--purple2)' }}>Learning</span> · {post.taggedSkill?.name || 'General'}</div>

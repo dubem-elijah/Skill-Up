@@ -3,8 +3,7 @@ import React, { useState } from 'react';
 import Icon from './Icon';
 import Avatar from './Avatar';
 
-export default function Navbar({ user, onMenuClick, onProfileAction, publicMode = false, onGetStarted }) {
-  const [query, setQuery] = useState('');
+export default function Navbar({ user, onMenuClick, onProfileAction, publicMode = false, onGetStarted, theme = 'dark', onToggleTheme = () => {}, searchQuery = '', onSearchChange = () => {} }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const navLinks = [
     { label: 'Home', href: '#home' },
@@ -43,13 +42,17 @@ export default function Navbar({ user, onMenuClick, onProfileAction, publicMode 
           <input
             className="search-input"
             placeholder="Search for skills, people, or opportunities..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
           />
         </div>
       )}
 
       <div className="navbar-actions">
+        <button type="button" className="navbar-theme-toggle" onClick={onToggleTheme} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
+          <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={18} color="var(--text2)" />
+        </button>
+
         {!publicMode ? (
           <>
             {[{ name: 'bell', badge: '3', color: 'var(--purple)' }, { name: 'messages', badge: '2', color: 'var(--pink)' }].map(({ name, badge, color }) => (

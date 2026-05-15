@@ -9,13 +9,13 @@ const styles = {
   sub: { fontSize: 14, color: 'var(--text2)', marginBottom: 24 },
 };
 
-export default function Bookmarks() {
+export default function Bookmarks({ openProfile }) {
   return (
     <main style={styles.container}>
       <div style={styles.title}>Bookmarks 🔖</div>
       <div style={styles.sub}>Posts you've saved for later.</div>
       {posts.slice(0, 2).map((p) => (
-        <PostCard key={p.id} post={p} />
+        <PostCard key={p.id} post={p} onProfileClick={openProfile} />
       ))}
     </main>
   );

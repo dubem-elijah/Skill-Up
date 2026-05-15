@@ -223,7 +223,7 @@ const seedChats = {
   ],
 };
 
-export default function Messages() {
+export default function Messages({ openProfile }) {
   const { dynamicMessages } = useMessages();
   const [activeId, setActiveId] = useState(initialMessages[0].id);
   const [chats, setChats] = useState(seedChats);
@@ -263,7 +263,25 @@ export default function Messages() {
               style={styles.msgItem(activeId === msg.id)}
               onClick={() => setActiveId(msg.id)}
             >
-              <Avatar initials={msg.user.initials} size="md" gradient={msg.user.gradient} />
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openProfile?.({
+                    id: msg.user.id || msg.id,
+                    name: msg.user.name,
+                    initials: msg.user.initials,
+                    gradient: msg.user.gradient,
+                    role: 'Member',
+                    bio: 'Active member in the SkillUp community.',
+                    xp: 0,
+                    streak: 0,
+                  });
+                }}
+                style={{ padding: 0, border: 'none', background: 'transparent', cursor: 'pointer' }}
+              >
+                <Avatar initials={msg.user.initials} size="md" gradient={msg.user.gradient} />
+              </button>
               <div style={styles.msgMeta}>
                 <div style={styles.msgName}>{msg.user.name}</div>
                 <div style={styles.msgPreview}>{msg.lastMessage}</div>
@@ -282,7 +300,22 @@ export default function Messages() {
         {active ? (
           <>
             <div style={styles.chatHeader}>
-              <Avatar initials={active.user.initials} size="md" gradient={active.user.gradient} />
+              <button
+                type="button"
+                onClick={() => openProfile?.({
+                  id: active.user.id || active.id,
+                  name: active.user.name,
+                  initials: active.user.initials,
+                  gradient: active.user.gradient,
+                  role: 'Member',
+                  bio: 'Active member in the SkillUp community.',
+                  xp: 0,
+                  streak: 0,
+                })}
+                style={{ padding: 0, border: 'none', background: 'transparent', cursor: 'pointer' }}
+              >
+                <Avatar initials={active.user.initials} size="md" gradient={active.user.gradient} />
+              </button>
               <div>
                 <div style={styles.chatName}>{active.user.name}</div>
                 <div style={styles.chatStatus}><span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--green)', display: 'inline-block' }} /> Online</div>
