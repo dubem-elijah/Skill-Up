@@ -1,5 +1,5 @@
 // src/pages/Home.jsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PostInput from '../assets/components/PostInput';
 import PostCard from '../assets/components/PostCard';
 import { posts as initialPosts } from '../utils/data';
@@ -36,8 +36,37 @@ const styles = {
 };
 
 export default function Home({ user, openProfile, searchQuery = '' }) {
+  const POSTS_STORAGE_KEY = 'skillup_posts';
   const [activeTab, setActiveTab] = useState('For you');
-  const [posts, setPosts] = useState(initialPosts);
+  const [posts, setPosts] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(POSTS_STORAGE_KEY);
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (error) {
+          console.warn('Failed to parse saved posts', error);
+        }
+      }
+    }
+    return initialPosts;
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(posts));
+    }
+  }, [posts]);
+
+  const handleComment = (postId) => {
+    setPosts((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId
+          ? { ...post, comments: (post.comments || 0) + 1 }
+          : post
+      )
+    );
+  };
 
   const handlePost = (payload) => {
     const newPost = {
@@ -87,7 +116,13 @@ export default function Home({ user, openProfile, searchQuery = '' }) {
           post.taggedSkill?.category,
         ].some((value) => value?.toLowerCase().includes(query));
       }).map((post) => (
-        <PostCard key={post.id} post={post} onProfileClick={openProfile} />
+        <PostCard
+          key={post.id}
+          post={post}
+          onProfileClick={openProfile}
+          currentUser={user}
+          onComment={handleComment}
+        />
       ))}
       {!posts.some((post) => {
         if (!searchQuery.trim()) return false;

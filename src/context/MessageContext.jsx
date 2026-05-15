@@ -4,10 +4,18 @@ export const MessageContext = createContext();
 
 export function MessageProvider({ children }) {
   const [dynamicMessages, setDynamicMessages] = useState([]);
+  const [dynamicChats, setDynamicChats] = useState({});
   const [interactions, setInteractions] = useState({});
 
   const addInteractionMessage = useCallback((type, user, postAuthor, postText) => {
     const messageId = `interaction-${Date.now()}`;
+    const messageText =
+      type === 'like'
+        ? `${user.name} liked ${postAuthor ? `your comment on ${postAuthor}'s post` : 'your post'}`
+        : postText?.trim()
+        ? postText.trim()
+        : `${user.name} commented on your post`;
+
     const message = {
       id: messageId,
       user: {
@@ -15,10 +23,7 @@ export function MessageProvider({ children }) {
         initials: user.initials,
         gradient: user.gradient,
       },
-      lastMessage:
-        type === 'like'
-          ? `liked your ${postAuthor ? 'comment' : 'post'} on ${postAuthor || 'their'} post`
-          : `commented on your post: "${postText.substring(0, 40)}..."`,
+      lastMessage: messageText,
       time: 'now',
       unread: 1,
       isInteraction: true,
@@ -29,7 +34,20 @@ export function MessageProvider({ children }) {
       return [message, ...filtered];
     });
 
-    // Also track the interaction
+    if (type === 'comment') {
+      setDynamicChats((prev) => ({
+        ...prev,
+        [messageId]: [
+          {
+            id: Date.now(),
+            text: messageText,
+            fromMe: false,
+            time: 'now',
+          },
+        ],
+      }));
+    }
+
     setInteractions((prev) => ({
       ...prev,
       [messageId]: {
@@ -42,9 +60,27 @@ export function MessageProvider({ children }) {
     }));
   }, []);
 
+  const markMessageAsRead = useCallback((messageId) => {
+    setDynamicMessages((prev) =>
+      prev.map((message) =>
+        message.id === messageId ? { ...message, unread: 0 } : message
+      )
+    );
+  }, []);
+
+  const addChatMessage = useCallback((messageId, chatMessage) => {
+    setDynamicChats((prev) => ({
+      ...prev,
+      [messageId]: [...(prev[messageId] || []), chatMessage],
+    }));
+  }, []);
+
   const value = {
     dynamicMessages,
+    dynamicChats,
     addInteractionMessage,
+    addChatMessage,
+    markMessageAsRead,
     interactions,
   };
 

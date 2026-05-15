@@ -46,11 +46,12 @@ function BankingPreview() {
   );
 }
 
-export default function PostCard({ post, onProfileClick }) {
+export default function PostCard({ post, onProfileClick, currentUser, onComment }) {
   const { addInteractionMessage } = useMessages();
   const [liked, setLiked] = useState(post.isLiked || post.likedByMe);
   const [likes, setLikes] = useState(post.likes);
-  const [commented, setCommented] = useState(false);
+  const [showCommentBox, setShowCommentBox] = useState(false);
+  const [commentText, setCommentText] = useState('');
 
   // Support both data structures
   const author = post.user?.name || post.author;
@@ -70,27 +71,44 @@ export default function PostCard({ post, onProfileClick }) {
   };
 
   const handleLike = () => {
-    setLiked(l => !l);
-    setLikes(n => liked ? n - 1 : n + 1);
-    
+    setLiked((l) => !l);
+    setLikes((n) => (liked ? n - 1 : n + 1));
+
     if (!liked) {
-      addInteractionMessage('like', {
-        name: author,
-        initials: initials,
-        gradient: gradient,
-      }, null, post.text);
+      addInteractionMessage(
+        'like',
+        {
+          name: author,
+          initials: initials,
+          gradient: gradient,
+        },
+        null,
+        post.text
+      );
     }
   };
 
-  const handleComment = () => {
-    if (!commented) {
-      setCommented(true);
-      addInteractionMessage('comment', {
-        name: author,
-        initials: initials,
-        gradient: gradient,
-      }, author, post.text);
-    }
+  const handleToggleComment = () => {
+    setShowCommentBox((prev) => !prev);
+  };
+
+  const submitComment = () => {
+    const trimmed = commentText.trim();
+    if (!trimmed) return;
+
+    onComment?.(post.id);
+    addInteractionMessage(
+      'comment',
+      {
+        name: currentUser?.name || author,
+        initials: currentUser?.initials || initials,
+        gradient: currentUser?.gradient || gradient,
+      },
+      author,
+      trimmed
+    );
+    setCommentText('');
+    setShowCommentBox(false);
   };
 
   return (
@@ -151,7 +169,7 @@ export default function PostCard({ post, onProfileClick }) {
           style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: liked ? 'var(--red)' : 'var(--text2)', cursor: 'pointer', padding: '6px 12px', borderRadius: 10, background: 'none', border: 'none', fontFamily: "'DM Sans',sans-serif" }}>
           <Icon name="heart" size={16} color={liked ? 'var(--red)' : 'currentColor'} />{likes}
         </button>
-        <button onClick={handleComment}
+        <button onClick={handleToggleComment}
           style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text2)', cursor: 'pointer', padding: '6px 12px', borderRadius: 10, background: 'none', border: 'none', fontFamily: "'DM Sans',sans-serif" }}>
           <Icon name="comment" size={16} color="currentColor" />{post.comments}
         </button>
@@ -165,6 +183,33 @@ export default function PostCard({ post, onProfileClick }) {
           </button>
         </div>
       </div>
+
+      {showCommentBox && (
+        <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <textarea
+            value={commentText}
+            onChange={(e) => setCommentText(e.target.value)}
+            placeholder="Write a comment..."
+            style={{ width: '100%', minHeight: 90, resize: 'vertical', padding: 12, borderRadius: 14, border: '1px solid var(--border)', background: 'var(--bg3)', color: 'var(--text1)', fontSize: 14, fontFamily: "'DM Sans',sans-serif", outline: 'none' }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+            <button
+              type="button"
+              onClick={() => setShowCommentBox(false)}
+              style={{ padding: '10px 16px', borderRadius: 12, border: '1px solid var(--border)', background: 'var(--bg3)', color: 'var(--text2)', fontFamily: "'DM Sans',sans-serif", cursor: 'pointer' }}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={submitComment}
+              style={{ padding: '10px 16px', borderRadius: 12, border: 'none', background: 'var(--purple)', color: 'white', fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}
+            >
+              Post comment
+            </button>
+          </div>
+        </div>
+      )}
 
       {post.likedByNames && (
         <div style={{ fontSize: 12, color: 'var(--text2)', display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--border)' }}>

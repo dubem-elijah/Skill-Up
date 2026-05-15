@@ -224,24 +224,54 @@ const seedChats = {
 };
 
 export default function Messages({ openProfile }) {
-  const { dynamicMessages } = useMessages();
+  const { dynamicMessages, dynamicChats, addChatMessage, markMessageAsRead } = useMessages();
   const [activeId, setActiveId] = useState(initialMessages[0].id);
   const [chats, setChats] = useState(seedChats);
   const [input, setInput] = useState('');
+  const [messages, setMessages] = useState(() => [...dynamicMessages, ...initialMessages]);
 
-  // Merge static and dynamic messages
-  const allMessages = [...dynamicMessages, ...initialMessages];
-  const messages = allMessages.length > 0 ? allMessages : initialMessages;
+  React.useEffect(() => {
+    setMessages((prev) => {
+      const prevById = new Map(prev.map((message) => [message.id, message]));
+      return [
+        ...dynamicMessages,
+        ...initialMessages.map((message) => prevById.get(message.id) || message),
+      ];
+    });
+  }, [dynamicMessages]);
 
   const active = messages.find((m) => m.id === activeId);
-  const chatHistory = chats[activeId] || [];
+  const chatHistory = dynamicChats[activeId] || chats[activeId] || [];
+
+  React.useEffect(() => {
+    if (activeId) {
+      markMessageAsRead(activeId);
+    }
+  }, [activeId, markMessageAsRead]);
 
   const send = () => {
-    if (!input.trim()) return;
-    setChats((prev) => ({
-      ...prev,
-      [activeId]: [...(prev[activeId] || []), { id: Date.now(), text: input, fromMe: true, time: 'now' }],
-    }));
+    const trimmed = input.trim();
+    if (!trimmed) return;
+
+    const outgoingMessage = { id: Date.now(), text: trimmed, fromMe: true, time: 'now' };
+
+    if (dynamicChats[activeId]) {
+      addChatMessage(activeId, outgoingMessage);
+    } else {
+      setChats((prev) => ({
+        ...prev,
+        [activeId]: [...(prev[activeId] || []), outgoingMessage],
+      }));
+    }
+
+    setMessages((prev) =>
+      prev.map((message) =>
+        message.id === activeId
+          ? { ...message, lastMessage: trimmed, time: 'now' }
+          : message
+      )
+    );
+
     setInput('');
   };
 
@@ -261,7 +291,15 @@ export default function Messages({ openProfile }) {
             <div
               key={msg.id}
               style={styles.msgItem(activeId === msg.id)}
-              onClick={() => setActiveId(msg.id)}
+              onClick={() => {
+                setActiveId(msg.id);
+                markMessageAsRead(msg.id);
+                setMessages((prev) =>
+                  prev.map((message) =>
+                    message.id === msg.id ? { ...message, unread: 0 } : message
+                  )
+                );
+              }}
             >
               <button
                 type="button"
@@ -288,7 +326,11 @@ export default function Messages({ openProfile }) {
               </div>
               <div style={styles.msgRight}>
                 <span style={styles.msgTime}>{msg.time}</span>
-                {msg.unread > 0 && <span style={styles.unreadBadge}>{msg.unread}</span>}
+                {msg.unread > 0 && (
+                  <span style={styles.unreadBadge}>
+                    {msg.unread > 9 ? '9+' : msg.unread}
+                  </span>
+                )}
               </div>
             </div>
           ))}
